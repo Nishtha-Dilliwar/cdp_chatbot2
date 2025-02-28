@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDP Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        #chat-container {
+            width: 400px;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        #chat-box {
+            height: 300px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin: 5px;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        .user {
+            background-color: #d1e7dd;
+            text-align: right;
+        }
+        .bot {
+            background-color: #f8d7da;
+            text-align: left;
+        }
+        #user-input {
+            width: 80%;
+            padding: 5px;
+        }
+        button {
+            padding: 5px 10px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>CDP Chatbot</h1>
+    <div id="chat-container">
+        <div id="chat-box"></div>
+        <input type="file" id="file-input" accept=".pdf,.txt">
+        <button onclick="uploadFile()">Upload Document</button>
+        <input type="text" id="user-input" placeholder="Ask a question...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const userInput = document.getElementById("user-input").value;
+            if (!userInput.trim()) return;
+            
+            const chatBox = document.getElementById("chat-box");
+            chatBox.innerHTML += `<div class='message user'>${userInput}</div>`;
+            document.getElementById("user-input").value = "";
+            
+            const response = await fetch("http://127.0.0.1:5000/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userInput })
+            });
+            
+            const data = await response.json();
+            chatBox.innerHTML += `<div class='message bot'>${data.response}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        async function uploadFile() {
+            const fileInput = document.getElementById("file-input");
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            const response = await fetch("http://127.0.0.1:5000/upload", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            const chatBox = document.getElementById("chat-box");
+
+            if (response.ok) {
+                // Display the extracted text in the chat box
+                chatBox.innerHTML += `<div class='message bot'>File uploaded: ${data.filename}</div>`;
+                chatBox.innerHTML += `<div class='message bot'>Extracted Text: ${data.text}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                chatBox.innerHTML += `<div class='message bot'>Error: ${data.error}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+    </script>
+</body>
+</html>

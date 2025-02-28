@@ -1,0 +1,9 @@
+Segment Documentation
+
+1. Setting Up a Source
+To set up a new source in Segment, follow these steps:
+- Log in to your Segment workspace.
+- Click on "Sources" in the left sidebar.
+- Click "Add Source."
+- Select the source type (e.g., JavaScript, Mobile, Server).
+- Follow the prompts to configure the source.
